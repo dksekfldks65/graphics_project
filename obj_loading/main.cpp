@@ -7,8 +7,10 @@
 #include <string>
 #include <fstream>
 #include <chrono>
+#include <time.h>
 
 #include "Object.h"
+#include "Camera.h"
 #include "Shader.h"
 
 #include "vec.hpp"
@@ -19,6 +21,12 @@ void init();
 void display();
 void reshape(int, int);
 void idle();
+void keyboard(unsigned char, int, int);
+void special(int, int, int);
+void delay(float secs);
+void createGLUTMenus();
+void processMenuEvents(int option);
+void myMouseFunc(int button, int state, int x, int y);
 
 GLuint program;
 
@@ -50,6 +58,7 @@ kmuvcl::math::vec4f light_specular    = kmuvcl::math::vec4f(1.0f, 1.0f, 1.0f, 1.
 
 std::string g_filename;
 Object      g_model;        // object
+Camera		  g_camera;											// viewer (you)
 
 float model_scale = 1.0f;
 float model_angle = 0.0f;
@@ -64,7 +73,7 @@ int main(int argc, char* argv[])
   }
   else
   {
-    g_filename = "./data/Zuccarello.obj";
+    g_filename = "./data/sofa_with_normals.obj";
   }
 
   glutInit(&argc, argv);
@@ -73,9 +82,12 @@ int main(int argc, char* argv[])
   glutInitWindowSize(640, 640);
 
   glutCreateWindow("Modeling & Navigating Your Studio");
-
+  glutKeyboardFunc(keyboard);
+  glutSpecialFunc(special);
   glutDisplayFunc(display);
   glutReshapeFunc(reshape);
+  glutMouseFunc(myMouseFunc);
+  createGLUTMenus();
   glutIdleFunc(idle);
 
   if (glewInit() != GLEW_OK)
@@ -90,6 +102,40 @@ int main(int argc, char* argv[])
 
   return 0;
 }
+
+void createGLUTMenus(){
+  GLint SubMenu1 = glutCreateMenu(processMenuEvents);
+  glutAddMenuEntry("3",1 );
+  glutAddMenuEntry("5",2 );
+  glutAddMenuEntry("7",3 );
+
+  GLint menu = glutCreateMenu(processMenuEvents);
+  glutAddSubMenu("moveMuseum",SubMenu1);
+  glutAttachMenu(GLUT_RIGHT_BUTTON);
+}
+
+void processMenuEvents(int option){
+  switch (option){
+
+  }
+}
+
+void delay(float secs)
+{
+	float end = clock() / CLOCKS_PER_SEC + secs;
+	while ((clock() / CLOCKS_PER_SEC) < end);
+}
+
+void myMouseFunc(int button, int state, int x, int y)
+{
+	if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+
+	}
+	else if(button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
+
+	}
+}
+
 
 void init()
 {
@@ -136,18 +182,27 @@ void display()
   kmuvcl::math::mat4x4f   mat_Proj, mat_View_inv, mat_Model;
 
   // camera intrinsic param
-  mat_Proj = kmuvcl::math::perspective(60.0f, 1.0f, 0.001f, 10000.0f);
+  mat_Proj = kmuvcl::math::perspective(60.0f, 1.0f, 0.001f, 100.0f);
 
+/*
   // camera extrinsic param
   mat_View_inv = kmuvcl::math::lookAt(
-    300.0f, 300.0f, 3.0f,
+    0.0f, 0.0f, 3.0f,
     0.0f, 0.0f, 0.0f,
     0.0f, 1.0f, 0.0f);
+*/
+
+  // camera extrinsic param
+  mat_View_inv= kmuvcl::math::lookAt(
+  	g_camera.position()(0), g_camera.position()(1)+1.0f, g_camera.position()(2),				// eye position
+  	g_camera.center_position()(0), g_camera.center_position()(1)+1.0f, g_camera.center_position()(2), // center position
+  	g_camera.up_direction()(0), g_camera.up_direction()(1), g_camera.up_direction()(2)			// up direction
+  	);
 
   mat_Model = kmuvcl::math::scale(model_scale, model_scale, model_scale);
-  mat_Model = kmuvcl::math::rotate(model_angle*0.7f, 0.0f, 0.0f, 1.0f) * mat_Model;
-  mat_Model = kmuvcl::math::rotate(model_angle,      0.0f, 1.0f, 0.0f) * mat_Model;
-  mat_Model = kmuvcl::math::rotate(model_angle*0.5f, 1.0f, 0.0f, 0.0f) * mat_Model;
+  //mat_Model = kmuvcl::math::rotate(model_angle*0.7f, 0.0f, 0.0f, 1.0f) * mat_Model;
+  //mat_Model = kmuvcl::math::rotate(model_angle,      0.0f, 1.0f, 0.0f) * mat_Model;
+  //mat_Model = kmuvcl::math::rotate(model_angle*0.5f, 1.0f, 0.0f, 0.0f) * mat_Model;
 
   mat_PVM = mat_Proj*mat_View_inv*mat_Model;
 
@@ -191,6 +246,55 @@ void reshape(int width, int height)
 	glViewport(0, 0, width, height);
 }
 
+void keyboard(unsigned char key, int x, int y)
+{
+
+    if(key == 'a' || key == 'A')
+  {
+    g_camera.rotate_left(5.0f);
+    glutPostRedisplay(); //os한테 다시 그려달라고 요청하는 것!  mydisplay를 호출하는게 아니다.
+  }
+  else if(key == 'd' || key == 'D')
+  {
+    g_camera.rotate_right(5.0f);
+    glutPostRedisplay(); //os한테 다시 그려달라고 요청하는 것!  mydisplay를 호출하는게 아니다.
+  }
+
+  else if(key == 'w' || key == 'W') // 상승
+  {
+    float delta = 0.1f;
+    g_camera.fly(delta);
+    glutPostRedisplay();
+  }
+  else if(key == 's' || key == 'S') // 하강
+  {
+    float delta = -0.1f;
+    g_camera.fly(delta);
+    glutPostRedisplay();
+  }
+}
+
+void special(int key, int x, int y)
+{
+	// TODO: properly handle special keyboard event
+  switch(key)
+      {
+      case GLUT_KEY_UP:
+          g_camera.move_forward(0.5f);
+          break;
+      case GLUT_KEY_DOWN:
+          g_camera.move_backward(0.5f);
+          break;
+      case GLUT_KEY_LEFT:
+          g_camera.move_left(0.5f);
+          break;
+      case GLUT_KEY_RIGHT:
+          g_camera.move_right(0.5f);
+          break;
+      }
+
+      glutPostRedisplay();
+}
 
 void idle()
 {
@@ -199,7 +303,6 @@ void idle()
   std::chrono::duration<float> elaped_seconds = (curr - prev);
 
   model_angle += 10 * elaped_seconds.count();
-
   prev = curr;
 
   glutPostRedisplay();
