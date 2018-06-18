@@ -73,7 +73,7 @@ int main(int argc, char* argv[])
   }
   else
   {
-    g_filename = "./data/sofa_with_normals.obj";
+    g_filename = "./data/Hangar.obj";
   }
 
   glutInit(&argc, argv);
