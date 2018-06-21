@@ -9,7 +9,7 @@ struct Group
 {
 public:
   Group(const std::string& name);
-    
+
 public:
   std::string                         m_name;
 
@@ -21,14 +21,14 @@ public:
 
 struct Material
 {
-public:  
+public:
   Material();
-  Material(const std::string& name, 
-    kmuvcl::math::vec4f& ambient, 
-    kmuvcl::math::vec4f& diffuse, 
-    kmuvcl::math::vec4f& specular, 
+  Material(const std::string& name,
+    kmuvcl::math::vec4f& ambient,
+    kmuvcl::math::vec4f& diffuse,
+    kmuvcl::math::vec4f& specular,
     float& shininess);
-  
+
 public:
   std::string           m_name;
 
@@ -41,18 +41,20 @@ public:
 class Object
 {
 public:
+  GLuint    textureid;
   Object() {}
 
-  void draw(int loc_a_vertex, int loc_a_normal, 
-    int loc_u_material_ambient, int loc_u_material_diffuse, 
+  void draw(int loc_a_vertex, int loc_a_normal, int loc_a_texcoord,
+    int loc_u_material_ambient, int loc_u_material_diffuse,
     int loc_u_material_specular, int loc_u_material_shininess);
   void print();
-	
+
 	bool load_simple_obj(const std::string& filename);
   bool load_simple_mtl(const std::string& filename);
+  void load_texture(const std::string& filename);
 
-private:  
+private:
   std::string PATH;
   std::vector<Group>              m_groups;
-  std::map<std::string, Material> m_materials;  
+  std::map<std::string, Material> m_materials;
 };

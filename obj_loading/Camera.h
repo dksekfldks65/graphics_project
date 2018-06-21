@@ -5,7 +5,7 @@ class Camera
 {
 public:
   Camera()
-    : position_(0,0,0), front_dir_(0,0,-1), up_dir_(0,2,0), right_dir_(1,0,0), fovy_(45)
+    : position_(20,5,45), front_dir_(0,0,-1), up_dir_(0,2,0), right_dir_(1,0,0), fovy_(45)
   {}
   Camera(const kmuvcl::math::vec3f& _position, const kmuvcl::math::vec3f& _front_dir, const kmuvcl::math::vec3f& _up_dir, float _fovy)
     : position_(_position), front_dir_(_front_dir), up_dir_(_up_dir), fovy_(_fovy)

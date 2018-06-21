@@ -10,6 +10,9 @@ uniform vec4 u_material_diffuse;
 uniform vec4 u_material_specular;
 uniform float u_material_shininess;
 
+uniform sampler2D u_texid;
+varying vec2 v_texcoord;
+
 varying vec3 v_vertex_wc;
 varying vec3 v_normal_wc;
 
@@ -19,11 +22,11 @@ vec4 directional_light()
 
   vec3 vertex_wc = v_vertex_wc;
   vec3 normal_wc = normalize(v_normal_wc);
-  
+
   vec3 light_vector_wc = normalize(u_light_vector);
   vec3 light_incident_vector_wc = - light_vector_wc;
   vec3 reflect_vector_wc = reflect(light_incident_vector_wc, normal_wc);
-  
+
   vec3 view_position_wc = vec3(u_view_matrix * vec4(0,0,0,1));
   vec3 view_vector_wc = view_position_wc - vertex_wc;
   view_vector_wc = normalize(view_vector_wc);
@@ -39,7 +42,7 @@ vec4 directional_light()
   return color;
 }
 
-void main() 
+void main()
 {
-  gl_FragColor = directional_light();
+  gl_FragColor = directional_light()*texture2D(u_texid, v_texcoord);
 }
